@@ -59,7 +59,7 @@ def get_dag_run(task_instance, session=None):
     return dag_run
 
 
-def add_tagging(task_instance, run_id):
+def add_tagging(task_instance, run_id, owner="unknown"):
     """
     Add customized tagging to TaskInstances.
     """
@@ -69,6 +69,7 @@ def add_tagging(task_instance, run_id):
     with hub.configure_scope() as scope:
         scope.set_tag("run_id", run_id)
         scope.set_tag("executor", executor_name)
+        scope.set_tag("kirby_owner", owner)
 
         for tag_name in SCOPE_TAGS:
             attribute = getattr(task_instance, tag_name)
@@ -109,8 +110,9 @@ def sentry_patched_run_raw_task_with_span(task_instance, *args, session=None, **
         dag_id = task_instance.dag_id
         execution_date = task_instance.execution_date
         run_id = dag_run.run_id
+        owner = task_instance.task.dag.owner
 
-        add_tagging(task_instance, run_id)
+        add_tagging(task_instance, run_id, owner)
         add_breadcrumbs(task_instance, session)
         try:
             with hub.start_span(
@@ -135,8 +137,9 @@ def sentry_patched_run_raw_task(task_instance, *args, session=None, **kwargs):
     with hub.push_scope():
         dag_run = get_dag_run(task_instance)
         run_id = dag_run.run_id
+        owner = task_instance.task.dag.owner
 
-        add_tagging(task_instance, run_id)
+        add_tagging(task_instance, run_id, owner)
         add_breadcrumbs(task_instance, session)
         try:
             original_run_raw_task(task_instance, *args, session=session, **kwargs)
