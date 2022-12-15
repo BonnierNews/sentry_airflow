@@ -1,4 +1,4 @@
-# Sentry Airflow Plugin
+# Sentry Airflow Plugin---deprecated
 
 A plugin for [Airflow](https://airflow.apache.org/) dags and tasks that sets up [Sentry](https://sentry.io) for error logging. 
 
